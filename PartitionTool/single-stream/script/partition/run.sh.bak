@@ -1,0 +1,19 @@
+echo "run.sh config graph method"
+prefix=livejournal
+path=$2
+pnum=26
+method=$3
+if [ $method = "hash" ]; then
+echo "./gknifedemo -p $pnum -c config/$1 -o $prefix\_$1.hash.part -g $path -f elist -m hash -b edge > $prefix\_$1.hash.result"
+./gknifedemo -p $pnum -c config/$1 -o $prefix\_$1.hash.part -g $path -f elist -m hash -b edge > $prefix\_$1.hash.result
+fi
+
+if [ $method = "ldg" ]; then
+echo "./gknifedemo -p $pnum -c config/$1 -o $prefix\_$1.ldg.part -g $path -f elist -m dg -w linear -b edge > $prefix\_$1.ldg.result"
+./gknifedemo -p $pnum -c config/$1 -o $prefix\_$1.ldg.part -g $path -f elist -m dg -w linear -b edge > $prefix\_$1.ldg.result
+fi
+
+if [ $method = "hiob" ]; then
+echo "./gknifedemo -p $pnum -c config/$1 -o $prefix\_$1.hiob.$4.part -g $path -f elist -m hiob -s $4 -b edge > $prefix_$1.hiob.$4.result"
+./gknifedemo -p $pnum -c config/$1 -o $prefix\_$1.hiob.$4.part -g $path -f elist -m hiob -s $4 -b edge > $prefix\_$1.hiob.$4.result
+fi

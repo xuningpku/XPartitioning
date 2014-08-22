@@ -1,0 +1,34 @@
+9
+
+dir
+1175
+http://162.105.203.140/svn/yxshao/GraphLab/src/single-stream/script
+http://162.105.203.140/svn/yxshao
+
+
+
+2013-07-31T02:21:52.193992Z
+1120
+simon
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+923108b4-a0a5-5448-b996-a80f3bf527ca
+
+giraphjob
+dir
+
+partition
+dir
+

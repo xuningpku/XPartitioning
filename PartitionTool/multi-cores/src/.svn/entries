@@ -1,0 +1,34 @@
+9
+
+dir
+912
+http://162.105.203.140/svn/yxshao/GraphLab/src/multi-cores/src
+http://162.105.203.140/svn/yxshao
+
+
+
+2012-12-13T01:29:27.409789Z
+297
+simon
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+923108b4-a0a5-5448-b996-a80f3bf527ca
+
+core
+dir
+
+util
+dir
+

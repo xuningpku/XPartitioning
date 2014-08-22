@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/yxshao/!svn/ver/912/GraphLab/src
+END
+cputest.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/yxshao/!svn/ver/288/GraphLab/src/cputest.cpp
+END
+partition_user.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/yxshao/!svn/ver/289/GraphLab/src/partition_user.cpp
+END
+partition_rand.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/yxshao/!svn/ver/283/GraphLab/src/partition_rand.cpp
+END

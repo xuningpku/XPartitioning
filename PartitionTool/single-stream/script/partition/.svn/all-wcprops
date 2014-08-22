@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/yxshao/!svn/ver/1120/GraphLab/src/single-stream/script/partition
+END
+copy.sh
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/yxshao/!svn/ver/1120/GraphLab/src/single-stream/script/partition/copy.sh
+END
+reanalysis.sh
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/yxshao/!svn/ver/1120/GraphLab/src/single-stream/script/partition/reanalysis.sh
+END
+test.sh
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/yxshao/!svn/ver/1120/GraphLab/src/single-stream/script/partition/test.sh
+END
+run.sh.bak
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/yxshao/!svn/ver/1120/GraphLab/src/single-stream/script/partition/run.sh.bak
+END
+clean.sh
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/yxshao/!svn/ver/1120/GraphLab/src/single-stream/script/partition/clean.sh
+END
+run.sh
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/yxshao/!svn/ver/1120/GraphLab/src/single-stream/script/partition/run.sh
+END
+test-fennel.sh
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/yxshao/!svn/ver/1120/GraphLab/src/single-stream/script/partition/test-fennel.sh
+END

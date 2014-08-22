@@ -1,0 +1,1 @@
+twitter_homo_32.part ./gknifedemo -p 32 -v 40103281 -c config/homo_32.config -g /home/hadoop/simon/dataset/twitter/twitter_rv.net.rand -o twitter_homo_32.part -f elist -e true -m dg -w linear

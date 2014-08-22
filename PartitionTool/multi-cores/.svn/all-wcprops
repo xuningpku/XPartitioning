@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/yxshao/!svn/ver/297/GraphLab/src/multi-cores
+END
+AUTHORS
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/yxshao/!svn/ver/291/GraphLab/src/multi-cores/AUTHORS
+END
+configure.in
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/yxshao/!svn/ver/295/GraphLab/src/multi-cores/configure.in
+END
+ChangeLog
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/yxshao/!svn/ver/291/GraphLab/src/multi-cores/ChangeLog
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/yxshao/!svn/ver/296/GraphLab/src/multi-cores/Makefile.am
+END
+autogen.sh
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/yxshao/!svn/ver/291/GraphLab/src/multi-cores/autogen.sh
+END
+NEWS
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/yxshao/!svn/ver/291/GraphLab/src/multi-cores/NEWS
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/yxshao/!svn/ver/291/GraphLab/src/multi-cores/README
+END

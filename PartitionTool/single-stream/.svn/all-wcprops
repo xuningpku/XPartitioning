@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/yxshao/!svn/ver/1175/GraphLab/src/single-stream
+END
+AUTHORS
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/yxshao/!svn/ver/298/GraphLab/src/single-stream/AUTHORS
+END
+configure.in
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/yxshao/!svn/ver/298/GraphLab/src/single-stream/configure.in
+END
+ChangeLog
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/yxshao/!svn/ver/298/GraphLab/src/single-stream/ChangeLog
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/yxshao/!svn/ver/309/GraphLab/src/single-stream/Makefile.am
+END
+autogen.sh
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/yxshao/!svn/ver/298/GraphLab/src/single-stream/autogen.sh
+END
+NEWS
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/yxshao/!svn/ver/298/GraphLab/src/single-stream/NEWS
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/yxshao/!svn/ver/298/GraphLab/src/single-stream/README
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/yxshao/!svn/ver/906/GraphLab/src/single-stream/Makefile
+END

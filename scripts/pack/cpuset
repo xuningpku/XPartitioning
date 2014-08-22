@@ -1,0 +1,12 @@
+#!/bin/bash
+#set cpu frequency on host.
+
+host=$1
+freq=$2
+#for i in `cat $vg`
+#do
+	for j in `seq 0 11` 
+	do
+		ssh root@$host cpufreq-set -c $j -f $freq
+	done
+#done

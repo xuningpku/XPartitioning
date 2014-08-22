@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/yxshao/!svn/ver/1103/GraphLab/src/single-stream/include/core
+END
+graphpartition.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/yxshao/!svn/ver/309/GraphLab/src/single-stream/include/core/graphpartition.h
+END
+nodeconfig.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/yxshao/!svn/ver/346/GraphLab/src/single-stream/include/core/nodeconfig.h
+END
+streampartitioner.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/yxshao/!svn/ver/335/GraphLab/src/single-stream/include/core/streampartitioner.h
+END
+graphknife.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/yxshao/!svn/ver/346/GraphLab/src/single-stream/include/core/graphknife.h
+END
+partitionstatistic.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/yxshao/!svn/ver/346/GraphLab/src/single-stream/include/core/partitionstatistic.h
+END
+type.h
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/yxshao/!svn/ver/309/GraphLab/src/single-stream/include/core/type.h
+END
+homoheuristic.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/yxshao/!svn/ver/309/GraphLab/src/single-stream/include/core/homoheuristic.h
+END
+abstractheuristic.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/yxshao/!svn/ver/1103/GraphLab/src/single-stream/include/core/abstractheuristic.h
+END
+edgecutspartitioner.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/yxshao/!svn/ver/335/GraphLab/src/single-stream/include/core/edgecutspartitioner.h
+END
+loader.h
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/yxshao/!svn/ver/298/GraphLab/src/single-stream/include/core/loader.h
+END
+heterheuristic.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/yxshao/!svn/ver/1021/GraphLab/src/single-stream/include/core/heterheuristic.h
+END

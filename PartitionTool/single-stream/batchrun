@@ -1,0 +1,85 @@
+#!/bin/bash
+
+dir=partition/LJ/new-expr
+
+#./tune.sh /home/hadoop/simon/dataset/wiki-talk/wikitalk.undir.rand wikitalk heter_config_26_13_cpu_io hiob 26
+#./tune.sh ~/simon/dataset/amazon/amazon0312.undir.rand amazon0312 heter_config_8_13_cpu_io hiob 8
+#./tune.sh ~/simon/dataset/amazon/amazon0312.undir.rand amazon0312 heter_config_4_13_cpu_io hiob 4
+#./tune.sh ~/simon/dataset/amazon/amazon0312.undir.rand amazon0312 heter_config_2_13_cpu_io hiob 2
+#echo "./gknifedemo -p 26 -g /home/hadoop/simon/dataset/wiki-talk/wikitalk.undir.rand -o wikitalk_homo_26.ldg.part -m dg -w linear -c config/expr-config/homo/homo_26 > partition/LJ/new-expr/wikitalk_homo_26.result"
+#./gknifedemo -p 26 -g /home/hadoop/simon/dataset/wiki-talk/wikitalk.undir.rand -o wikitalk_homo_26.ldg.part -m dg -w linear -c config/expr-config/homo/homo_26 > partition/LJ/new-expr/wikitalk_homo_26.result
+
+#echo "./gknifedemo -p 16 -g /home/hadoop/simon/dataset/amazon/amazon0312.undir.rand -o amazon_homo_16.ldg.part -m dg -w linear  -c config/expr-config/homo/homo_16 > partition/LJ/new-expr/amazon_homo_16.result"
+#./gknifedemo -p 16 -g /home/hadoop/simon/dataset/amazon/amazon0312.undir.rand -o amazon_homo_16.ldg.part -m dg -w linear -c config/expr-config/homo/homo_16 > partition/LJ/new-expr/amazon_homo_16.result
+#echo "./gknifedemo -p 8 -g /home/hadoop/simon/dataset/amazon/amazon0312.undir.rand -o amazon_homo_8.ldg.part -m dg -w linear  -c config/expr-config/homo/homo_8 > partition/LJ/new-expr/amazon_homo_8.result"
+#./gknifedemo -p 8 -g /home/hadoop/simon/dataset/amazon/amazon0312.undir.rand -o amazon_homo_8.ldg.part -m dg -w linear -c config/expr-config/homo/homo_8 > partition/LJ/new-expr/amazon_homo_8.result
+#echo "./gknifedemo -p 4 -g /home/hadoop/simon/dataset/amazon/amazon0312.undir.rand -o amazon_homo_4.ldg.part -m dg -w linear -c config/expr-config/homo/homo_4 > partition/LJ/new-expr/amazon_homo_4.result"
+#./gknifedemo -p 4 -g /home/hadoop/simon/dataset/amazon/amazon0312.undir.rand -o amazon_homo_4.ldg.part -m dg -w linear -c config/expr-config/homo/homo_4 > partition/LJ/new-expr/amazon_homo_4.result
+#echo "./gknifedemo -p 2 -g /home/hadoop/simon/dataset/amazon/amazon0312.undir.rand -o amazon_homo_2.ldg.part -m dg -w linear -c config/expr-config/homo/homo_2 > partition/LJ/new-expr/amazon_homo_2.result"
+#./gknifedemo -p 2 -g /home/hadoop/simon/dataset/amazon/amazon0312.undir.rand -o amazon_homo_2.ldg.part -m dg -w linear -c config/expr-config/homo/homo_2 > partition/LJ/new-expr/amazon_homo_2.result
+
+#exit
+
+dir=partition/wiki-talk/new-expr
+for line in `cat wikiinput`
+do
+	config=${line%#*}
+	part=${line#*#}
+	pnum=${part#*homo_}
+	pnum=${pnum%%.*}
+	echo $config, $part, $pnum
+	echo "./gknifedemo -p $pnum -g /mnt/disk1/simon0227/simon/dataset/wiki-talk/wikitalk.undir.rand -pm $dir/$part -hp true -m hash -c config/expr-config/$config > partition/wiki-talk/new-expr/$config.$part.reanalysis"
+	./gknifedemo -p $pnum -g /mnt/disk1/simon0227/simon/dataset/wiki-talk/wikitalk.undir.rand -pm $dir/$part -hp true -m hash -c config/expr-config/$config > partition/wiki-talk/new-expr/$config.$part.reanalysis
+done
+
+dir=partition/amazon/new-expr
+for line in `cat amazoninput`
+do
+	config=${line%#*}
+	part=${line#*#}
+	pnum=${part#*homo_}
+	pnum=${pnum%%.*}
+	echo $config, $part, $pnum
+	echo "./gknifedemo -p $pnum -g /mnt/disk1/simon0227/simon/dataset/amazon/amazon0312.undir.rand -pm $dir/$part -hp true -m hash -c config/expr-config/$config > partition/amazon/new-expr/$config.$part.reanalysis"
+	./gknifedemo -p $pnum -g /mnt/disk1/simon0227/simon/dataset/amazon/amazon0312.undir.rand -pm $dir/$part -hp true -m hash -c config/expr-config/$config > partition/amazon/new-expr/$config.$part.reanalysis
+done
+
+dir=partition/LJ/new-expr
+for line in `cat ljinput`
+do
+	config=${line%#*}
+	part=${line#*#}
+	pnum=${part#*homo_}
+	pnum=${pnum%%.*}
+	echo $config, $part, $pnum
+	echo "./gknifedemo -p $pnum -g /mnt/disk1/simon0227/simon/dataset/LJ/soc-LiveJournal.undir.adj.rand -pm $dir/$part -hp true -m hash -c config/expr-config/$config > partition/LJ/new-expr/$config.$part.reanalysis"
+	./gknifedemo -p $pnum -g /mnt/disk1/simon0227/simon/dataset/LJ/soc-LiveJournal.undir.adj.rand -pm $dir/$part -hp true -m hash -c config/expr-config/$config > partition/LJ/new-expr/$config.$part.reanalysis
+done
+exit
+
+for file in `ls config/expr-config/homo`
+do
+#	if [ "$file" = "homo" ]; then
+#		continue
+#	fi
+	pnum=${file#homo_}
+	pnum=${pnum%%_*}
+	echo $pnum
+	./tune.sh ~/simon/dataset/LJ/soc-LiveJournal.undir.elist.rand soc-LiveJournal $file hash $pnum
+	./tune.sh ~/simon/dataset/wiki-talk/wikitalk.undir.rand wikitalk $file hash $pnum
+	./tune.sh ~/simon/dataset/amazon/amazon0312.undir.rand amazon0312 $file hash $pnum
+done
+
+# ./tune.sh $@ hash
+# ./tune.sh $@ ldg
+# ./tune.sh $@ hiob 5 6 1.5
+
+# for((i=0; i<=4; i++))
+# do
+#	 ./tune.sh $@ hiob $i
+# done
+
+# ./tune.sh $@ hiob 7
+# ./tune.sh $@ hiob 6 0.001
+# ./tune.sh $@ hiob 6 0.01
+# ./tune.sh $@ hiob 6 0.1

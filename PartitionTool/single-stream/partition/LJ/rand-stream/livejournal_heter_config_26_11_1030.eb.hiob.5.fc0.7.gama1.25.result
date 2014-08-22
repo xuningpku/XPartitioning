@@ -1,0 +1,29 @@
+src/core/graphknife.cpp(ProcessOptions:185): Options:
+	graphpath=/home/hadoop/simon/dataset/LJ/soc-LiveJournal.undir.elist.rand
+	config=config/heter_config_26_11_1030
+	npart=26
+	haspartitioned=0
+	partitionedgraph=
+	isvertexbalance=0
+	htype=13
+	wtype=0
+	edgecuts=1
+	scoretype=1
+	usefennel=1
+	iocpufactor=0.700000
+	gama=1.250000
+
+src/core/graphknife.cpp(Start:221): vertexnum=4846609 edgenum=85702474
+
+src/core/graphknife.cpp(Start:269): Partition Processing costs 452.865745s
+src/util/filereader.cpp(GetCutsRatio:340): Edge Balacne factor (with in/out edge): 3.203061
+src/core/graphknife.cpp(Start:290): edgenum = 85702474, edgenum_ = 85702474
+src/core/graphknife.cpp(Start:317): Get EdgeCuts Ratio costs 254.359563s
+src/core/graphknife.cpp(Start:318): EdgeNumber: 85702474, EdgeCuts: 45687796
+src/core/graphknife.cpp(Start:319): EdgeCuts ratio= 53.309775%, EdgeCuts ratio2= 53.309775%
+src/core/graphknife.cpp(Start:320): Vertex_BF= 1.321767, VCPULoad_BF= 1.321767
+src/core/graphknife.cpp(Start:321): Edge_BF= 1.601531, ECPULoad_BF= 1.601531
+src/core/graphknife.cpp(Start:322): TotalMinIoCost= 832977520.000000[remap=false]
+src/core/graphknife.cpp(Start:323): MaxVertexCpuCost= 246388.000000, MaxEdgeCpuCost= 5279044.000000
+src/core/graphknife.cpp(Start:324): MaxIoCost = 44273380.000000
+src/core/graphknife.cpp(Start:325): MaxVertexTotalMixCost= 44492709.000000, MaxEdgeTotalMixCost= 49032084.000000

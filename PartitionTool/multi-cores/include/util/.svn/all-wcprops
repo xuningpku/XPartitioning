@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/yxshao/!svn/ver/297/GraphLab/src/multi-cores/include/util
+END
+filesplit.h
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/yxshao/!svn/ver/295/GraphLab/src/multi-cores/include/util/filesplit.h
+END
+filesplitor.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/yxshao/!svn/ver/295/GraphLab/src/multi-cores/include/util/filesplitor.h
+END
+time.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/yxshao/!svn/ver/297/GraphLab/src/multi-cores/include/util/time.h
+END
+logger.h
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/yxshao/!svn/ver/293/GraphLab/src/multi-cores/include/util/logger.h
+END
+assert.h
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/yxshao/!svn/ver/292/GraphLab/src/multi-cores/include/util/assert.h
+END
+filereader.h
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/yxshao/!svn/ver/295/GraphLab/src/multi-cores/include/util/filereader.h
+END
+genericthread.h
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/yxshao/!svn/ver/293/GraphLab/src/multi-cores/include/util/genericthread.h
+END

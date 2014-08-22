@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/yxshao/!svn/ver/1175/GraphLab/src/single-stream/src/core
+END
+graphknife.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/yxshao/!svn/ver/1172/GraphLab/src/single-stream/src/core/graphknife.cpp
+END
+partitionstatistic.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/yxshao/!svn/ver/1171/GraphLab/src/single-stream/src/core/partitionstatistic.cpp
+END
+homoheuristic.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/yxshao/!svn/ver/346/GraphLab/src/single-stream/src/core/homoheuristic.cpp
+END
+edgecutspartitioner.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/yxshao/!svn/ver/1175/GraphLab/src/single-stream/src/core/edgecutspartitioner.cpp
+END
+heterheuristic.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/yxshao/!svn/ver/1021/GraphLab/src/single-stream/src/core/heterheuristic.cpp
+END
+graphpartition.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/yxshao/!svn/ver/300/GraphLab/src/single-stream/src/core/graphpartition.cpp
+END

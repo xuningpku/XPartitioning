@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/yxshao/!svn/ver/297/GraphLab/src/multi-cores/src/util
+END
+time.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/yxshao/!svn/ver/296/GraphLab/src/multi-cores/src/util/time.cpp
+END
+filereader.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/yxshao/!svn/ver/297/GraphLab/src/multi-cores/src/util/filereader.cpp
+END
+genericthread.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/yxshao/!svn/ver/294/GraphLab/src/multi-cores/src/util/genericthread.cpp
+END
+filesplitor.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/yxshao/!svn/ver/297/GraphLab/src/multi-cores/src/util/filesplitor.cpp
+END

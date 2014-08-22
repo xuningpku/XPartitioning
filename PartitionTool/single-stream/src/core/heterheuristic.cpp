@@ -1,0 +1,700 @@
+/*
+ * Author: Shao Yingxia
+ * Create Date: 2012年12月20日 星期四 19时28分20秒
+ */
+
+#include <core/heterheuristic.h>
+#include <util/counter.h>
+#include <math.h>
+
+#define PI 3.1415926
+
+/*********************************
+ * ******HeterBalanced************
+ * ******************************/
+pid_t
+HeterBalanced::MakeDecision(vnum_t seq, vid_t source, int num, vidarray& targets) {
+    int pnum = stat_.get_partitionnumber();
+    vector<pid_t> reserved;
+
+    pid_t i;
+    vnum_t vcount;
+    double unitcost;
+    double mincost = 1e20, eps = 1e-5, tmpcost;
+    for(i = 0; i < pnum; i++) {
+        if(isvertexcount_)
+            vcount = stat_.GetVertexCount(i);
+        else
+            vcount = stat_.GetEdgeCount(i);
+       unitcost = stat_.GetCpuCost(i);
+       tmpcost = vcount * unitcost;
+       if(mincost - tmpcost > eps) {
+           mincost = tmpcost;
+           reserved.clear();
+           reserved.push_back(i);
+       }
+       else if(fabs(mincost-tmpcost) < eps) {
+           reserved.push_back(i);
+       }
+    }
+    return RandomGetAPid(reserved);
+}
+
+/***************************
+ ********HeterGreedy********
+ **************************/
+pid_t
+HeterGreedyIO::MakeDecision(vnum_t seq, vid_t source, int num, vidarray& targets) {
+    int pnum = stat_.get_partitionnumber();
+    vector<pid_t> reserved;
+
+    pid_t i,j;
+    vnum_t count;
+    double unitcost;
+    vector<Counter<vnum_t> > intersectioncount(pnum, Counter<vnum_t>());
+    vector<double> iocost(pnum, 0.0);
+    double mincost = 1e20, eps=1e-5;
+    NodeConfig node;
+   
+    stat_.GetIntersectionCount(num, targets, intersectioncount);
+
+    for(i = 0; i < pnum; i++) {
+        stat_.GetNode(i, node);
+        for(j = 0; j < pnum; j++) {
+            iocost[i] += intersectioncount[j] * node.get_bandwidth(j);
+        }
+
+    }
+    //no balance consideration
+    for(i = 0; i < pnum; i++) {
+        if(mincost - iocost[i]  > eps) {
+            mincost = iocost[i];
+            reserved.clear();
+            reserved.push_back(i);
+        }
+        else if(fabs(mincost-iocost[i]) < eps) {
+            reserved.push_back(i);
+        }
+    }
+    return RandomGetAPid(reserved);
+}
+
+/***************************
+ **HeterGreedyWithBalance***
+ **************************/
+pid_t
+HeterGreedyIOWithBalance::MakeDecision(vnum_t seq, vid_t source, int num, vidarray& targets) {
+    //return maxrule(seq, source, num, targets);
+    if(usefennel_){
+        Logger(LOG_DEBUG, "Call Fennel....");
+        return fennelstandard(seq, source, num,targets);
+    }
+    return workloadbasedrule(seq, source, num, targets);
+//    return minrule(seq, source, num, targets);
+//      return capacityrule(seq, source, num, targets);
+}
+
+double 
+HeterGreedyIOWithBalance::getscore(ScorePara sp) {
+    double res;
+    switch(sp.scoretype) {
+        case 0: //rule 0:simple plus
+            res = sp.iocost + sp.iocpu_factor * sp.cpucost;
+            break;
+        case 1: //rule 1:plus cpucost's square root
+            res = sp.iocost + sp.iocpu_factor * sqrt(sp.cpucost);
+           // res = sp.iocost + sqrt(sp.cpucost);
+    //        Logger(LOG_DEBUG, " iofcator= %lf", sp.iocpu_factor);
+            break;
+        case 2: //rule 2:scale to the iocost scale v1
+            res = sp.iocost + sp.iocpu_factor * (sp.cpucost - sp.mincpucost)*(sp.maxiocost-sp.miniocost)/(sp.maxcpucost-sp.mincpucost+1e-5);
+            break;
+        case 3: //rule 3:scale to the iocost scale v2, reducing the effect of cpucost
+            res = sp.iocost + sp.iocpu_factor * (sp.cpucost)*(sp.maxiocost-sp.miniocost)/(sp.maxcpucost+1e-5);
+            break;
+        case 4: //rule 4:simple plus accuiocost, iocost, cpucost
+			//need to tuning iocpu_factor
+            res = sp.iocpu_factor * (sp.cpucost+sp.accuiocost) + sp.iocost;
+            break;
+        case 5: //rule 5:fennle-like rule
+            res = sp.iocpu_factor * sp.iocost + sp.cpucost;
+//			Logger(LOG_DEBUG, "fennel score = %lf: iocost=%lf cpucost=%lf", res, sp.iocost, sp.cpucost);
+            break;
+		case 6: //rule 6: a uniform rule: delta + balance function
+            res = (sp.iocpu_factor * sp.deltacpucost + sp.iocost) + sp.balance_factor * (sp.accuiocost + sp.iocpu_factor * sp.cpucost);
+//			Logger(LOG_DEBUG, "fennel score = %lf: iocost=%lf cpucost=%lf", res, sp.iocost, sp.cpucost);
+            break;
+		case 7: //rule 7: sqrt-balanced.
+            res = (sp.iocpu_factor * sp.deltacpucost + sp.iocost) + sqrt(sp.accuiocost + sp.cpucost);
+//			Logger(LOG_DEBUG, "fennel score = %lf: iocost=%lf cpucost=%lf", res, sp.iocost, sp.cpucost);
+            break;
+        case 8: //rule 8: min workload heuristic.
+            res = sp.accuiocost + sp.cpucost;
+            break;
+        case 9: //rule 9: min detla workload heuristic.
+            res = sp.iocpu_factor * sp.deltacpucost + sp.iocost;
+            break; 
+        case 10://rule 10: combined rule based on degree of vertex
+            if (sp.degree > 20){
+                res = (sp.iocpu_factor * sp.deltacpucost + sp.iocost) + sqrt(sp.accuiocost + sp.cpucost);
+            }
+            else {
+                res = sp.accuiocost + sp.cpucost;
+            }
+            break;
+        case 11://rule 10: combined rule based on degree of vertex
+            if (sp.degree > 10){
+                res = (sp.iocpu_factor * sp.deltacpucost + sp.iocost) + sqrt(sp.accuiocost + sp.cpucost);
+            }
+            else {
+                res = sp.accuiocost + sp.cpucost;
+             }
+            break;
+case 12://rule 10: combined rule based on degree of vertex
+            if (sp.degree > 15){
+                res = (sp.iocpu_factor * sp.deltacpucost + sp.iocost) + sqrt(sp.accuiocost + sp.cpucost);
+            }
+            else {
+                res = sp.accuiocost + sp.cpucost;
+            }
+            break;
+ 
+case 13://rule 10: combined rule based on degree of vertex
+            if (sp.degree > 25){
+                res = (sp.iocpu_factor * sp.deltacpucost + sp.iocost) + sqrt(sp.accuiocost + sp.cpucost);
+            }
+            else {
+                res = sp.accuiocost + sp.cpucost;
+            }
+            break;
+
+case 14://rule 10: combined rule based on degree of vertex
+            if (sp.degree > 50){
+                res = (sp.iocpu_factor * sp.deltacpucost + sp.iocost) + sqrt(sp.accuiocost + sp.cpucost);
+            }
+            else {
+                res = sp.accuiocost + sp.cpucost;
+            }
+            break;
+                     case 15:
+                        res = (sp.iocpu_factor * sp.deltacpucost + sp.iocost) + (sp.accuiocost + sp.cpucost);
+                                    break;
+                                             case 16: 
+                                                res = (sp.iocpu_factor * sp.deltacpucost + sp.iocost) + pow(sp.accuiocost + sp.cpucost,0.25);
+                                                            break;
+                                                                     case 17: 
+                                                                        res = (sp.iocpu_factor * sp.deltacpucost + sp.iocost) + pow(sp.accuiocost + sp.cpucost,0.75);
+                                                                                    break;
+                                                                                             case 18:
+                                                                                                res = (sp.iocpu_factor * sp.deltacpucost + sp.iocost) + pow(sp.accuiocost + sp.cpucost,1.25);
+                                                                                                            break;
+                                                                                                                     case 19: 
+                                                                                                                        res = (sp.iocpu_factor * sp.deltacpucost + sp.iocost) + pow(sp.accuiocost + sp.cpucost,1.5);
+                                                                                                                                    break;
+                                                                                                                                             case 20: 
+                                                                                                                                                res = (sp.iocpu_factor * sp.deltacpucost + sp.iocost) + pow(sp.accuiocost + sp.cpucost,2);
+                                                                                                                                                            break;
+
+
+
+        default:
+            Logger(LOG_FATAL, "Irregular score type=%d", sp.scoretype);
+            exit(1);
+    }
+//	fprintf(stderr, "acciocost=%lf iocost=%lf cpucost=%lf\n", sp.accuiocost, sp.iocost, sp.cpucost);
+//	if(sp.accuiocost > 0 && sp.accuiocost < 10) exit(1);
+    return res;
+}
+
+/*
+ * minrule is a rule minimize the cost which combines iocost and cpucost
+ * through getscore function
+ */
+pid_t
+HeterGreedyIOWithBalance::minrule(vnum_t seq, vid_t source, int num, vidarray& targets) {
+    int pnum = stat_.get_partitionnumber();
+    vector<pid_t> reserved;
+
+    pid_t i,j;
+    vnum_t count;
+    vector<Counter<vnum_t> > intersectioncount(pnum, Counter<vnum_t>());
+    vector<double> iocost(pnum, 0.0);
+    double minscore = 1e20, eps=1e-5;
+    double maxcpucost = -1e20, mincpucost=1e20, cpucost;
+    double maxiocost = -1e20, miniocost=1e20, ioc;
+    NodeConfig node;
+    ScorePara sp;
+   
+    stat_.GetIntersectionCount(num, targets, intersectioncount);
+
+    sp.scoretype = scoretype_;
+    //Logger(LOG_INFO, "scoretype = %d in HIOB", sp.scoretype);
+    for(i = 0; i < pnum; i++) {
+        stat_.GetNode(i, node);
+        for(j = 0; j < pnum; j++) {
+            //iocost[i] means the iocost when the node distribued into partition i.
+            iocost[i] += intersectioncount[j] * node.get_bandwidth(j);
+        }
+        if(isvertexcount_)
+            cpucost = node.get_cpucost() * (stat_.GetVertexCount(i));
+        else
+            cpucost = node.get_cpucost() * (stat_.GetEdgeCount(i));
+        ioc = iocost[i];
+        if(cpucost > maxcpucost) maxcpucost = cpucost;
+        if(cpucost < mincpucost) mincpucost = cpucost;
+        if(ioc > maxiocost) maxiocost = ioc;
+        if(ioc < miniocost) miniocost = ioc;
+    }
+    sp.maxcpucost = maxcpucost; sp.mincpucost = mincpucost;
+    sp.maxiocost = maxiocost; sp.miniocost = miniocost;
+	sp.iocpu_factor = stat_.get_iocpufactor();
+	sp.balance_factor = stat_.get_balancefactor();
+    double ideascore, cpuscore;
+    double mcpucost;
+    int select_pid;
+    for(i = 0; i < pnum; i++) reserved.push_back(i);
+
+	/*
+	 * we choose a node with minimal cost after putting the incoming
+	 * node into a node's partition
+	 */
+    for(i = 0; i < pnum; i++) {
+        if(isvertexcount_){
+            sp.cpucost = stat_.GetCpuCost(i) * (stat_.GetVertexCount(i));
+			sp.deltacpucost = stat_.GetCpuCost(i);
+		}
+        else {
+            sp.cpucost = stat_.GetCpuCost(i) * (stat_.GetEdgeCount(i));
+			sp.deltacpucost = stat_.GetCpuCost(i) * num;
+		}
+        sp.iocost = iocost[i];
+		//Logger(LOG_DEBUG, "getting accuio");
+        sp.accuiocost = stat_.GetAccuIoCost(i);
+        ideascore = getscore(sp);
+	//	Logger(LOG_DEBUG, "ideascore=%lf", ideascore);
+        if(minscore - ideascore  > eps) {
+            //tmp_max_io = iocost[i];
+            minscore = ideascore;
+            mcpucost = cpucost;
+            reserved.clear();
+            reserved.push_back(i);
+        }
+        else if(fabs(minscore-ideascore) < eps) {
+            if(mcpucost - cpucost > eps){
+                mcpucost = cpucost;
+                reserved.clear();
+                reserved.push_back(i);
+            }
+            else if(fabs(mcpucost - cpucost) < eps){
+                reserved.push_back(i);
+            }
+        }
+    }
+    select_pid = RandomGetAPid(reserved);
+    stat_.AddCost(select_pid, iocost[select_pid]);
+    return select_pid;
+}
+
+// Fennel like function considered the heter environment.
+pid_t
+HeterGreedyIOWithBalance::fennelrule(vnum_t seq, vid_t source, int num, vidarray& targets) {
+    int pnum = stat_.get_partitionnumber();
+    vector<pid_t> reserved;
+
+    pid_t i,j;
+    vnum_t count;
+    vector<Counter<vnum_t> > intersectioncount(pnum, Counter<vnum_t>());
+    vector<double> iocost(pnum, 0.0);
+    double minscore = 1e20, eps=1e-5;//, tmp_max_io;
+    double maxcpucost = -1e20, mincpucost=1e20, cpucost;
+    double maxiocost = -1e20, miniocost=1e20, ioc;
+    NodeConfig node;
+    ScorePara sp;
+
+    //parameters
+    double gama = stat_.get_gama();
+    double iocpu_factor = stat_.get_iocpufactor();
+    Logger(LOG_DEBUG, "gama=%lf, iocpu_factor=%lf", gama, iocpu_factor);
+    stat_.GetIntersectionCount(num, targets, intersectioncount);
+
+    sp.scoretype = 5;
+    sp.iocpu_factor= iocpu_factor;
+
+    for(i = 0; i < pnum; i++) {
+        stat_.GetNode(i, node);
+        for(j = 0; j < pnum; j++) {
+            iocost[i] += intersectioncount[j] * node.get_bandwidth(j);
+        }
+        
+        if(isvertexcount_)
+            cpucost = node.get_cpucost() * gama * pow(stat_.GetVertexCount(i), gama - 1);
+        else
+            cpucost = node.get_cpucost() * gama * pow(stat_.GetEdgeCount(i), gama - 1);
+
+       // cpucost = node.get_cpucost() * gama * pow(stat_.GetVertexCount(i),gama-1);
+        ioc = iocost[i];
+        if(cpucost > maxcpucost) maxcpucost = cpucost;
+        if(cpucost < mincpucost) mincpucost = cpucost;
+        if(ioc > maxiocost) maxiocost = ioc;
+        if(ioc < miniocost) miniocost = ioc;
+    }
+    sp.maxcpucost = maxcpucost; sp.mincpucost = mincpucost;
+    sp.maxiocost = maxiocost; sp.miniocost = miniocost;
+
+    double ideascore,ioscore, cpuscore;
+    double mcpucost;
+    int select_pid;
+    for(i = 0; i < pnum; i++) reserved.push_back(i);
+
+    for(i = 0; i < pnum; i++) {
+        if(isvertexcount_)
+            sp.cpucost = node.get_cpucost() * gama * pow(stat_.GetVertexCount(i), gama-1);
+        else
+            sp.cpucost = node.get_cpucost() * gama * pow(stat_.GetEdgeCount(i), gama - 1);
+        //sp.cpucost = stat_.GetCpuCost(i) * gama * pow(stat_.GetVertexCount(i),gama-1);
+        sp.iocost = iocost[i];
+//        if (sp.iocost > 0.0)
+//        	cout << "partition: " << i << " vertex: " <<stat_.GetVertexCount(i) << " io: "<<sp.iocost <<endl;
+        ideascore = getscore(sp);
+
+        if(minscore - ideascore  > eps) {
+            //tmp_max_io = ioscore;
+            minscore = ideascore;
+            mcpucost = cpucost;
+            reserved.clear();
+            reserved.push_back(i);
+        }
+        else if(fabs(minscore-ideascore) < eps) {
+            if(mcpucost - cpucost > eps){
+                mcpucost = cpucost;
+                reserved.clear();
+                reserved.push_back(i);
+            }
+            else if(fabs(mcpucost - cpucost) < eps){
+                reserved.push_back(i);
+            }
+        }
+    }
+    select_pid = RandomGetAPid(reserved);
+    stat_.AddCost(select_pid, iocost[select_pid]);
+    return  select_pid;
+}
+
+pid_t
+HeterGreedyIOWithBalance::fennelstandard(vnum_t seq, vid_t source, int num, vidarray& targets) {
+    int pnum = stat_.get_partitionnumber();
+    vector<pid_t> reserved;
+
+    pid_t i,j;
+    vnum_t count;
+    vector<Counter<vnum_t> > intersectioncount(pnum, Counter<vnum_t>());
+    vector<double> iocost(pnum, 0.0);
+ //   vector<double> iocost_heter(pnum, 0.0);
+    double minscore = 1e20, eps=1e-5, tmp_max_io;
+    double maxcpucost = -1e20, mincpucost=1e20, cpucost;
+    double maxiocost = -1e20, miniocost=1e20, ioc;
+    NodeConfig node;
+    ScorePara sp;
+
+
+    //parameters
+    double gama = stat_.get_gama();
+//    cout<<gama<<endl;
+    double iocpu_factor = stat_.get_iocpufactor();
+//    cout<<iocpu_factor<<endl;
+    stat_.GetIntersectionCount(num, targets, intersectioncount);
+
+    sp.scoretype = 5;
+    sp.iocpu_factor= iocpu_factor;
+
+    for(i = 0; i < pnum; i++) {
+        stat_.GetNode(i, node);
+        for(j = 0; j < pnum; j++) {
+        	if (i==j)
+        		continue;
+            iocost[i] += intersectioncount[j] ;
+//            iocost_heter[i] += intersectioncount[j] * node.get_bandwidth(j);
+        }
+        if(isvertexcount_)
+            cpucost = gama * pow(stat_.GetVertexCount(i), gama - 1);
+        else
+            cpucost = gama * pow(stat_.GetEdgeCount(i), gama - 1);
+        //cpucost = node.get_cpucost() * gama * pow(stat_.GetVertexCount(i),gama-1);
+        ioc = iocost[i];
+        if(cpucost > maxcpucost) maxcpucost = cpucost;
+        if(cpucost < mincpucost) mincpucost = cpucost;
+        if(ioc > maxiocost) maxiocost = ioc;
+        if(ioc < miniocost) miniocost = ioc;
+    }
+    sp.maxcpucost = maxcpucost; sp.mincpucost = mincpucost;
+    sp.maxiocost = maxiocost; sp.miniocost = miniocost;
+
+    double ideascore,ioscore, cpuscore;
+    double mcpucost;
+    int select_pid;
+    for(i = 0; i < pnum; i++) reserved.push_back(i);
+
+    for(i = 0; i < pnum; i++) {
+        if(isvertexcount_)
+            sp.cpucost = gama * pow(stat_.GetVertexCount(i), gama-1);
+        else
+            sp.cpucost = gama * pow(stat_.GetEdgeCount(i), gama - 1);
+        //sp.cpucost = node.get_cpucost() * gama * pow(stat_.GetVertexCount(i),gama-1);
+        sp.iocost = iocost[i];
+//        if (sp.iocost > 0.0)
+//        	cout << "partition: " << i << " vertex: " <<stat_.GetVertexCount(i) <<" cpucost: "<< sp.cpucost <<" io_heter: "<<iocost_heter[i] <<" io: "<<sp.iocost <<endl;
+        ideascore = getscore(sp);
+
+        if(minscore - ideascore  > eps) {
+            //tmp_max_io = ioscore;
+            minscore = ideascore;
+            mcpucost = cpucost;
+            reserved.clear();
+            reserved.push_back(i);
+        }
+        else if(fabs(minscore-ideascore) < eps) {
+            if(mcpucost - cpucost > eps){
+                mcpucost = cpucost;
+                reserved.clear();
+                reserved.push_back(i);
+            }
+            else if(fabs(mcpucost - cpucost) < eps){
+                reserved.push_back(i);
+            }
+        }
+    }
+    select_pid = RandomGetAPid(reserved);
+    stat_.AddCost(select_pid, iocost[select_pid]);
+    return  select_pid;
+}
+
+/*
+ * Capacity-Based IOB rule:
+ * 1. check the node's cpucost reach the limit or not, if yes, pass that node.
+ * 2. caculate the ioscore, and choose the minimal node. Break ties with lowest cpucost
+ * */
+pid_t
+HeterGreedyIOWithBalance::capacityrule(vnum_t seq, vid_t source, int num, vidarray& targets) {
+    Logger(LOG_INFO, "Have Problem for edge-based balance in capacity rule!");
+    return -1;
+    int pnum = stat_.get_partitionnumber();
+    vector<pid_t> reserved;
+    pid_t i,j;
+    vnum_t count;
+    vector<Counter<vnum_t> > intersectioncount(pnum, Counter<vnum_t>());
+    vector<double> iocost(pnum, 0.0); 
+    double minscore = 1e20, eps=1e-5;
+    double cpucost, ioc;
+    NodeConfig node;
+   
+    stat_.GetIntersectionCount(num, targets, intersectioncount);
+
+    for(i = 0; i < pnum; i++) {
+        stat_.GetNode(i, node);
+        for(j = 0; j < pnum; j++) {
+            iocost[i] += intersectioncount[j] * node.get_bandwidth(j);
+        }
+        if(isvertexcount_)
+            cpucost = stat_.GetCpuCost(i) * stat_.GetVertexCount(i);
+        else
+            cpucost = stat_.GetCpuCost(i) * stat_.GetEdgeCount(i);
+        //cpucost = node.get_cpucost() * stat_.GetVertexCount(i);
+        ioc = iocost[i];
+    }
+
+    double ideascore,ioscore, cpuscore;
+    double mcpucost, cpucostlimit;
+    pid_t select_pid;
+    for(i = 0; i < pnum; i++) reserved.push_back(i);
+
+    for(i = 0; i < pnum; i++) {
+        if(isvertexcount_)
+            cpucost = stat_.GetCpuCost(i) * stat_.GetVertexCount(i);
+        else
+            cpucost = stat_.GetCpuCost(i) * stat_.GetEdgeCount(i);
+        //cpucost = stat_.GetCpuCost(i) * stat_.GetVertexCount(i);
+        cpucostlimit = stat_.GetCpuCostLimit(i);
+        if(fabs(cpucost - cpucostlimit) < eps) continue; //pass the max load node
+     
+        ioscore = iocost[i];
+
+        ideascore = ioscore;
+        if(minscore - ideascore  > eps) {
+    //        tmp_max_io = ioscore;
+            minscore = ideascore;
+            mcpucost = cpucost;
+            reserved.clear();
+            reserved.push_back(i);
+        }
+        else if(fabs(minscore-ideascore) < eps) {
+            if(mcpucost - cpucost > eps){
+                mcpucost = cpucost;
+                reserved.clear();
+                reserved.push_back(i);
+            }
+            else if(fabs(mcpucost - cpucost) < eps){
+                reserved.push_back(i);
+            }
+        }
+    }
+    select_pid = RandomGetAPid(reserved);
+    stat_.AddCost(select_pid, iocost[select_pid]);
+    return select_pid;
+}
+
+pid_t
+HeterGreedyIOWithBalance::maxrule(vnum_t seq, vid_t source, int num, vidarray& targets) {
+    int pnum = stat_.get_partitionnumber();
+    vector<pid_t> reserved;
+
+    pid_t i,j;
+    vnum_t count;
+    vector<Counter<vnum_t> > intersectioncount(pnum, Counter<vnum_t>());
+    vector<double> iocost(pnum, 0.0);
+    double maxscore = -1e20, eps=1e-5;
+    double maxcpucost = -1e20, mincpucost=1e20, cpucost;
+    NodeConfig node;
+   
+    stat_.GetIntersectionCount(num, targets, intersectioncount);
+
+    for(i = 0; i < pnum; i++) {
+        stat_.GetNode(i, node);
+        for(j = 0; j < pnum; j++) {
+            iocost[i] += intersectioncount[j] * node.get_bandwidth(j);
+        }
+        if(isvertexcount_)
+            cpucost = stat_.GetCpuCost(i) * stat_.GetVertexCount(i);
+        else
+            cpucost = stat_.GetCpuCost(i) * stat_.GetEdgeCount(i);
+        //cpucost = node.get_cpucost() * stat_.GetVertexCount(i);
+        if(cpucost > maxcpucost) maxcpucost = cpucost;
+        if(cpucost < mincpucost) mincpucost = cpucost;
+    }
+    double ideascore,ioscore, cpuscore;
+    double mcpucost;
+    
+    for(i = 0; i < pnum; i++) reserved.push_back(i);
+
+    for(i = 0; i < pnum; i++) {
+        if(isvertexcount_)
+            cpucost = stat_.GetCpuCost(i) * stat_.GetVertexCount(i);
+        else
+            cpucost = stat_.GetCpuCost(i) * stat_.GetEdgeCount(i);
+        //cpucost = stat_.GetCpuCost(i) * stat_.GetVertexCount(i);
+//        if(fabs(cpucost - maxcpucost) < eps) continue; //pass the max load node
+        ioscore = exp(-iocost[i]);
+        cpuscore = (maxcpucost - cpucost) / (maxcpucost - mincpucost + eps);
+        Logger(LOG_DEBUG, "Partition %d: ioscore=%lf, cpucscore=%lf", ioscore, cpuscore);
+
+        ideascore = ioscore + cpuscore;
+        if(maxscore - ideascore  < eps) {
+            maxscore = ideascore;
+            mcpucost = cpucost;
+            reserved.clear();
+            reserved.push_back(i);
+        }
+        else if(fabs(maxscore-ideascore) < eps) {
+            if(mcpucost - cpucost > eps){
+                mcpucost = cpucost;
+                reserved.clear();
+                reserved.push_back(i);
+            }
+            else if(fabs(mcpucost - cpucost) < eps){
+                reserved.push_back(i);
+            }
+        }
+    }
+    return RandomGetAPid(reserved);
+}
+
+/* based on min-rule */
+pid_t
+HeterGreedyIOWithBalance::workloadbasedrule(vnum_t seq, vid_t source, int num ,vidarray& targets){
+    int pnum = stat_.get_partitionnumber();
+    vector<pid_t> reserved;
+
+    pid_t i,j;
+    vnum_t count;
+    vector<Counter<vnum_t> > intersectioncount(pnum, Counter<vnum_t>());
+    vector<double> iocost(pnum, 0.0);
+    double minscore = 1e20, eps=1e-5;
+    double maxcpucost = -1e20, mincpucost=1e20, cpucost;
+    double maxiocost = -1e20, miniocost=1e20, ioc;
+    NodeConfig node;
+    ScorePara sp;
+
+    stat_.GetIntersectionCount(num, targets, intersectioncount);
+    sp.degree = num;
+    sp.scoretype = scoretype_;
+    //Logger(LOG_INFO, "scoretype = %d in HIOB", sp.scoretype);
+    /* 1. calculate total cost */
+    for(i = 0; i < pnum; i++) {
+        stat_.GetNode(i, node);
+        for(j = 0; j < pnum; j++) {
+            //iocost[i] means the iocost when the node distribued into partition i.
+            iocost[i] += intersectioncount[j] * node.get_bandwidth(j);
+        }
+        if(isvertexcount_)
+            cpucost = node.get_cpucost() * (stat_.GetVertexCount(i));
+        else
+            cpucost = node.get_cpucost() * (stat_.GetEdgeCount(i));
+        ioc = iocost[i];
+        if(cpucost > maxcpucost) maxcpucost = cpucost;
+        if(cpucost < mincpucost) mincpucost = cpucost;
+        if(ioc > maxiocost) maxiocost = ioc;
+        if(ioc < miniocost) miniocost = ioc;
+    }
+    sp.maxcpucost = maxcpucost; sp.mincpucost = mincpucost;
+    sp.maxiocost = maxiocost; sp.miniocost = miniocost;
+	sp.iocpu_factor = stat_.get_iocpufactor();
+	sp.balance_factor = stat_.get_balancefactor();
+    double ideascore, cpuscore;
+    double mcpucost;
+    int select_pid;
+    for(i = 0; i < pnum; i++) reserved.push_back(i);
+
+	/*
+	 * we choose a node with minimal cost after putting the incoming
+	 * node into a node's partition
+	 */
+    for(i = 0; i < pnum; i++) {
+        if(isvertexcount_){
+            sp.cpucost = stat_.GetCpuCost(i) * (stat_.GetVertexCount(i));
+			sp.deltacpucost = stat_.GetCpuCost(i);
+		}
+        else {
+        	/* total cpu cost */
+            sp.cpucost = stat_.GetCpuCost(i) * (stat_.GetEdgeCount(i)) * edgeweight_;
+            /* delta cpu cost */
+			sp.deltacpucost = stat_.GetCpuCost(i) * num * edgeweight_;
+		}
+        /* delta io cost */
+        sp.iocost = iocost[i];
+        /* total io cost */
+        sp.accuiocost = stat_.GetAccuIoCost(i);
+
+        /* calculate score */
+        ideascore = getscore(sp);
+	//	Logger(LOG_DEBUG, "ideascore=%lf", ideascore);
+        if(minscore - ideascore  > eps) {
+            //tmp_max_io = iocost[i];
+            minscore = ideascore;
+            mcpucost = cpucost;
+            reserved.clear();
+            reserved.push_back(i);
+        }
+        else if(fabs(minscore-ideascore) < eps) {
+            if(mcpucost - cpucost > eps){
+                mcpucost = cpucost;
+                reserved.clear();
+                reserved.push_back(i);
+            }
+            else if(fabs(mcpucost - cpucost) < eps){
+                reserved.push_back(i);
+            }
+        }
+    }
+    select_pid = RandomGetAPid(reserved);
+    stat_.AddCost(select_pid, iocost[select_pid]);
+    return select_pid;
+}
